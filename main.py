@@ -98,11 +98,11 @@ async def single_shiftreport(report_id: int):
 
     return JSONResponse(content=result_dict)
 
-@app.get('/shiftreport/all', tags=["ShiftReport"])
+@app.get('/shiftreport/all/', tags=["ShiftReport"])
 async def all_shiftreport():
     query = (
     db.session.query(ModelShiftReport.id, ModelShiftReport.client_name, ModelShiftReport.date, ModelShiftReport.support_provider)
-    .order_by(desc(ModelShiftReport.time_created))
+    .order_by(desc(ModelShiftReport.date))
     )
 
     shift_reports = query.all()
@@ -119,7 +119,6 @@ async def all_shiftreport():
     ]
 
     total_count = db.session.query(func.count()).select_from(ModelShiftReport).scalar()
-
     return JSONResponse(content={"total": total_count, "results": result_list})
 
 PAGE_SIZE = 30
@@ -134,7 +133,7 @@ async def get_shift_reports(
 
     query = (
         db.session.query(ModelShiftReport.id, ModelShiftReport.client_name, ModelShiftReport.date, ModelShiftReport.support_provider)
-        .order_by(desc(ModelShiftReport.time_created))
+        .order_by(desc(ModelShiftReport.date))
         .offset(start_index)
         .limit(page_size)
     )
