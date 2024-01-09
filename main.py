@@ -155,7 +155,39 @@ async def get_shift_reports(
 
     return JSONResponse(content={"total": total_count, "results": result_list})
 
+@app.get("/byname/shift_reports/{client_name}", response_model=List[dict], tags=["ShiftReport"])
+async def get_shift_reports_by_name(
+    client_name:str,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1),
+):
+    start_index = (page-1) * page_size
+    end_index = start_index + page_size
 
+    query = (
+        db.session.query(ModelShiftReport.id, ModelShiftReport.client_name, ModelShiftReport.date, ModelShiftReport.support_provider)
+        .filter(ModelShiftReport.client_name == client_name)
+        .order_by(desc(ModelShiftReport.date))
+        .offset(start_index)
+        .limit(page_size)
+    )
+
+    shift_reports = query.all()
+
+    # Convert the results to a list of dictionaries for the response
+    result_list = [
+        {
+            "id": report.id,
+            "date": report.date,
+            "support_provider": report.support_provider,
+            "client": report.client_name,
+        }
+        for report in shift_reports
+    ]
+
+    total_count = db.session.query(func.count()).select_from(ModelShiftReport).filter(ModelShiftReport.client_name == client_name).scalar()
+
+    return JSONResponse(content={"total": total_count, "results": result_list})
 
 
 
