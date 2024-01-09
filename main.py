@@ -19,7 +19,7 @@ from models import Payrun as ModelPayrun
 import os
 from dotenv import load_dotenv
 from typing import List
-from sqlalchemy import desc, cast, DateTime
+from sqlalchemy import desc, DateTime
 from sqlalchemy.sql import func
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -133,7 +133,8 @@ async def get_shift_reports(
 
     query = (
         db.session.query(ModelShiftReport.id, ModelShiftReport.client_name, ModelShiftReport.date, ModelShiftReport.support_provider)
-        .order_by(desc(ModelShiftReport.date))
+        # .order_by(desc(ModelShiftReport.date))
+        .order_by(desc(func.to_date(ModelShiftReport.date, 'DD/MM/YYYY')))
         .offset(start_index)
         .limit(page_size)
     )
@@ -167,7 +168,8 @@ async def get_shift_reports_by_name(
     query = (
         db.session.query(ModelShiftReport.id, ModelShiftReport.client_name, ModelShiftReport.date, ModelShiftReport.support_provider)
         .filter(ModelShiftReport.client_name == client_name)
-        .order_by(desc(ModelShiftReport.date))
+        # .order_by(desc(ModelShiftReport.date))
+        .order_by(desc(func.to_date(ModelShiftReport.date, 'DD/MM/YYYY')))
         .offset(start_index)
         .limit(page_size)
     )
@@ -206,17 +208,27 @@ async def invoice():
     return all_invoice
 
 @app.get('/invoices', tags=["Invoice"])
-def get_invoices(start_date: str = Query(..., description="Start date in YYYY-MM-DD format"),
-                 end_date: str = Query(..., description="End date in YYYY-MM-DD format"),
+def get_invoices(start_date: str = Query(None, description="Start date in DD/MM/YY format"),
+                 end_date: str = Query(None, description="End date in DD/MM/YY format"),
                  client: str = Query(None, description="Filter by client")):
     try:
-        query = db.session.query(ModelInvoice).filter(
-            ModelInvoice.date.between(start_date, end_date)
-        )
+        # query = db.session.query(ModelInvoice).filter(
+        #     ModelInvoice.date.between(start_date, end_date)
+        # )
+        query = db.session.query(ModelInvoice)
+        if start_date and end_date:
+            # Use the to_date function to convert the string dates to date
+            query = query.filter(
+                func.to_date(ModelInvoice.date, 'DD/MM/YY').between(
+                    func.to_date(start_date, 'DD/MM/YY'),
+                    func.to_date(end_date, 'DD/MM/YY')
+                )
+            )
 
         if client:
             query = query.filter(ModelInvoice.client == client)
-
+        
+        query = query.order_by(func.to_date(ModelInvoice.date, 'DD/MM/YY').desc())
         invoices = query.all()
 
         result = []
@@ -240,20 +252,41 @@ def get_invoices(start_date: str = Query(..., description="Start date in YYYY-MM
         return {'error': str(e)}
     
 @app.get('/invoices/employee', tags=["Invoice"])
-def get_invoices_byemployee(start_date: str = Query(..., description="Start date in YYYY-MM-DD format"),
-                 end_date: str = Query(..., description="End date in YYYY-MM-DD format"),
+def get_invoices_byemployee(start_date: str = Query(None, description="Start date in YYYY-MM-DD format"),
+                 end_date: str = Query(None, description="End date in YYYY-MM-DD format"),
                  employee: str = Query(None, description="Filter by employee")):
     try:
-        query = db.session.query(ModelInvoice).filter(
-            ModelInvoice.date.between(start_date, end_date)
-        )
+        query = db.session.query(ModelInvoice)
+
+        if start_date and end_date:
+            # Use the to_date function to convert the string dates to date
+            query = query.filter(
+                func.to_date(ModelInvoice.date, 'DD/MM/YY').between(
+                    func.to_date(start_date, 'DD/MM/YY'),
+                    func.to_date(end_date, 'DD/MM/YY')
+                )
+            ) 
+        # query = db.session.query(ModelInvoice).filter(
+        #     func.to_date(ModelInvoice.date, 'DD/MM/YY').between(
+        #         func.to_date(start_date, 'DD/MM/YY'),
+        #         func.to_date(end_date, 'DD/MM/YY')
+        #     )
+        # )
+
+
+
+        # query = db.session.query(ModelInvoice).filter(
+        #     ModelInvoice.date.between(start_date, end_date)
+        # )
 
         if employee:
             query = query.filter(ModelInvoice.employee == employee)
 
         
         # Add an order_by clause to sort by date in ascending order
-        query = query.order_by(ModelInvoice.date.asc())
+        query = query.order_by(func.to_date(ModelInvoice.date, 'DD/MM/YY').desc())
+
+        # query = query.order_by(ModelInvoice.date.asc())
 
         invoices = query.all()
 
@@ -313,18 +346,41 @@ async def payrun():
 
 
 @app.get('/payruns', tags=["Payrun"])
-def get_payruns(start_date: str = Query(..., description="Start date in YYYY-MM-DD format"),
-                 end_date: str = Query(..., description="End date in YYYY-MM-DD format"),
+def get_payruns(start_date: str = Query(None, description="Start date in YYYY-MM-DD format"),
+                 end_date: str = Query(None, description="End date in YYYY-MM-DD format"),
                  employee: str = Query(None, description="Filter by client")):
     try:
-        query = db.session.query(ModelPayrun).filter(
-            ModelPayrun.date.between(start_date, end_date)
-        )
+
+
+        query = db.session.query(ModelPayrun)
+        if start_date and end_date:
+            # Use the to_date function to convert the string dates to date
+            query = query.filter(
+                func.to_date(ModelPayrun.date, 'DD/MM/YY').between(
+                    func.to_date(start_date, 'DD/MM/YY'),
+                    func.to_date(end_date, 'DD/MM/YY')
+                )
+            )
 
         if employee:
             query = query.filter(ModelPayrun.employee == employee)
-
+        
+        query = query.order_by(func.to_date(ModelPayrun.date, 'DD/MM/YY').desc())
         payruns = query.all()
+
+
+
+
+
+
+        # query = db.session.query(ModelPayrun).filter(
+        #     ModelPayrun.date.between(start_date, end_date)
+        # )
+
+        # if employee:
+        #     query = query.filter(ModelPayrun.employee == employee)
+
+        # payruns = query.all()
 
         result = []
         for payrun in payruns:
