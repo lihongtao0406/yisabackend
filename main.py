@@ -390,6 +390,7 @@ def get_payruns(start_date: str = Query(None, description="Start date in YYYY-MM
                 'date': payrun.date,
                 'total_hours': payrun.total_hours,
                 'total_km': payrun.total_km,
+                'total_remittance': payrun.total_remittance,
             })
 
         return result
