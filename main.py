@@ -228,7 +228,7 @@ def get_invoices(start_date: str = Query(None, description="Start date in DD/MM/
         if client:
             query = query.filter(ModelInvoice.client == client)
         
-        query = query.order_by(func.to_date(ModelInvoice.date, 'DD/MM/YY').desc())
+        query = query.order_by(func.to_date(ModelInvoice.date, 'DD/MM/YY').desc(),ModelInvoice.time_created.desc())
         invoices = query.all()
 
         result = []
