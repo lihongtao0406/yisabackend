@@ -244,6 +244,8 @@ def get_invoices(start_date: str = Query(None, description="Start date in DD/MM/
                 'remittance': invoice.remittance,
                 'shiftreport_id': invoice.shiftreport_id,
                 'invoice_num': invoice.invoice_num,
+                'serviceType': invoice.serviceType,
+                'notes': invoice.notes
             })
 
         return result
@@ -434,7 +436,8 @@ async def create_report_and_incoive(shiftreport: SchemaShiftReport, invoice:Sche
             #Create data in Incoive 
             db_invoice = ModelInvoice(client = invoice.client, employee = invoice.employee, date = invoice.date, hours = invoice.hours,
                               travel_time = invoice.travel_time, travel_km = invoice.travel_km,
-                                remittance = invoice.remittance, invoice_num = invoice.invoice_num, shiftreport_id = db_shiftreport.id)
+                                remittance = invoice.remittance, invoice_num = invoice.invoice_num, serviceType = invoice.serviceType,
+                                 notes = invoice.notes, shiftreport_id = db_shiftreport.id)
             db.session.add(db_invoice)
             db.session.commit()
             db.session.refresh(db_invoice)

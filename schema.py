@@ -36,6 +36,8 @@ class Invoice(BaseModel):
     travel_km: int 
     remittance: float
     invoice_num: str 
+    serviceType:str
+    notes:str
     class Config:
         orm_mode = True
 

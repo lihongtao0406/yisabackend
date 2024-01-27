@@ -45,6 +45,8 @@ class Invoice(Base):
     travel_km = Column(Integer)
     remittance = Column(Float)
     invoice_num = Column(String)
+    serviceType = Column(String)
+    notes = Column(String)
     time_created = Column(DateTime(timezone=True), server_default=func.now())
     time_updated = Column(DateTime(timezone=True), onupdate=func.now())
 
