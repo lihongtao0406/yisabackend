@@ -253,6 +253,25 @@ def get_invoices(start_date: str = Query(None, description="Start date in DD/MM/
     except Exception as e:
         return {'error': str(e)}
     
+@app.delete('/invoices/{invoice_id}', tags=["Invoice"])
+def delete_invoice(invoice_id: int):
+    try:
+        # Fetch the invoice from the database
+        invoice = db.session.query(ModelInvoice).filter(ModelInvoice.id == invoice_id).first()
+
+        # Check if the invoice exists
+        if not invoice:
+            raise HTTPException(status_code=404, detail="Invoice not found")
+
+        # Delete the invoice from the database
+        db.session.delete(invoice)
+        db.session.commit()
+
+        return {"message": "Invoice deleted successfully"}
+
+    except Exception as e:
+        return {'error': str(e)}
+    
 @app.get('/invoices/employee', tags=["Invoice"])
 def get_invoices_byemployee(start_date: str = Query(None, description="Start date in YYYY-MM-DD format"),
                  end_date: str = Query(None, description="End date in YYYY-MM-DD format"),
