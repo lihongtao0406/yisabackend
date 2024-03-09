@@ -1,0 +1,7 @@
+SQLAlchemy==2.0.9
+uvicorn==0.21.1
+fastapi==0.95.1
+FastAPI_SQLAlchemy==0.2.1
+pydantic==1.10.7
+python-dotenv==0.21.1
+psycopg2-binary~=2.9.9
